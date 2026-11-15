@@ -1,4 +1,4 @@
-const ytdl = require('ytdl-core');
+const ytdl = require('@distube/ytdl-core');
 const yts = require('yt-search');
 
 module.exports = async (req, res) => {
@@ -18,10 +18,11 @@ module.exports = async (req, res) => {
         const info = await ytdl.getInfo(videoUrl, {
             requestOptions: {
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
                 }
             }
         });
+        
         const audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
         
         if (audioFormats.length === 0) {
