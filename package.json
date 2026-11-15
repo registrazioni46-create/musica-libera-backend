@@ -1,8 +1,13 @@
 {
   "name": "musica-libera-backend",
   "version": "1.0.0",
+  "description": "Backend per la skill Alexa Musica Libera",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" else exit 0"
+  },
   "dependencies": {
-    "ytdl-core": "^4.11.5",
-    "yt-search": "^2.10.4"
+    "@distube/ytdl-core": "^4.16.4",
+    "yt-search": "^2.11.0"
   }
 }
