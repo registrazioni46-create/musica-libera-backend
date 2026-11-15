@@ -1,0 +1,8 @@
+{
+  "name": "musica-libera-backend",
+  "version": "1.0.0",
+  "dependencies": {
+    "ytdl-core": "^4.11.5",
+    "yt-search": "^2.10.4"
+  }
+}
