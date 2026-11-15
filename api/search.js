@@ -1,4 +1,3 @@
-const ytdl = require('@distube/ytdl-core');
 const yts = require('yt-search');
 
 module.exports = async (req, res) => {
@@ -14,24 +13,15 @@ module.exports = async (req, res) => {
             return res.status(404).json({ error: 'Nessun video trovato' });
         }
 
-        const videoUrl = videos[0].url;
-        const info = await ytdl.getInfo(videoUrl, {
-            requestOptions: {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                }
-            }
-        });
-        
-        const audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
-        
-        if (audioFormats.length === 0) {
-            return res.status(500).json({ error: 'Formato audio non disponibile' });
-        }
+        const videoId = videos[0].videoId;
+        const audioUrl = `https://piped.video/latest/stream?id=${videoId}`;
 
-        return res.status(200).json({ audioUrl: audioFormats[0].url });
+        return res.status(200).json({ 
+            title: videos[0].title,
+            audioUrl: audioUrl 
+        });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ error: 'Errore durante l\'estrazione', details: error.message });
+        return res.status(500).json({ error: 'Errore durante la ricerca', details: error.message });
     }
 };
