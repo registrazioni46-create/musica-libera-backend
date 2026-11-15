@@ -15,7 +15,13 @@ module.exports = async (req, res) => {
         }
 
         const videoUrl = videos[0].url;
-        const info = await ytdl.getInfo(videoUrl);
+        const info = await ytdl.getInfo(videoUrl, {
+            requestOptions: {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+                }
+            }
+        });
         const audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
         
         if (audioFormats.length === 0) {
@@ -25,6 +31,6 @@ module.exports = async (req, res) => {
         return res.status(200).json({ audioUrl: audioFormats[0].url });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ error: 'Errore durante l\'estrazione' });
+        return res.status(500).json({ error: 'Errore durante l\'estrazione', details: error.message });
     }
 };
