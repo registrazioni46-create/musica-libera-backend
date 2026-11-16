@@ -7,7 +7,8 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const searchResult = await yts(query);
+        // Aggiungiamo "audio" per filtrare e trovare la canzone ufficiale ed evitare video di gaming o simili
+        const searchResult = await yts(query + " audio");
         const videos = searchResult.videos;
         if (!videos || videos.length === 0) {
             return res.status(404).json({ error: 'Nessun video trovato' });
