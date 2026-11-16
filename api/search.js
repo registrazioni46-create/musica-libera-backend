@@ -2,25 +2,25 @@ const yts = require('yt-search');
 const https = require('https');
 
 const INVIDIOUS_INSTANCES = [
-    'inv.nadeko.net',
     'invidious.nerdvpn.de',
-    'invidious.f5.si',
+    'inv.nadeko.net',
     'yt.artemislena.eu'
 ];
 
 function fetchJson(url) {
     return new Promise((resolve, reject) => {
         const req = https.get(url, { timeout: 4000, headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
-            if (res.statusCode !== 200) {
-                return reject(new Error(`Status ${res.statusCode}`));
-            }
             let data = '';
             res.on('data', chunk => data += chunk);
             res.on('end', () => {
+                // Se riceve HTML o errore HTTP, scarta subito
+                if (res.statusCode !== 200 || data.trim().startsWith('<')) {
+                    return reject(new Error('Risposta non valida'));
+                }
                 try {
                     resolve(JSON.parse(data));
                 } catch (e) {
-                    reject(e);
+                    reject(new Error('Errore nel parsing JSON'));
                 }
             });
         });
@@ -32,7 +32,7 @@ function fetchJson(url) {
 module.exports = async (req, res) => {
     const query = req.query.q;
     if (!query) {
-        return res.status(400).json({ error: 'Inserisci ?q=nome_canzone nell URL' });
+        return res.status(400).json({ error: 'Query mancante (usa ?q=testo)' });
     }
 
     try {
@@ -45,12 +45,10 @@ module.exports = async (req, res) => {
         const videoId = videos[0].videoId;
         let audioUrl = null;
 
-        // Prova le istanze Invidious in sequenza finché una risponde con lo stream M4A
         for (const host of INVIDIOUS_INSTANCES) {
             try {
                 const data = await fetchJson(`https://${host}/api/v1/videos/${videoId}`);
                 if (data && data.adaptiveFormats) {
-                    // Cerca formato solo audio mp4/m4a (l'unico compatibile al 100% con Alexa)
                     const m4a = data.adaptiveFormats.find(f => f.type && f.type.includes('audio/mp4'));
                     if (m4a && m4a.url) {
                         audioUrl = m4a.url;
@@ -58,12 +56,12 @@ module.exports = async (req, res) => {
                     }
                 }
             } catch (e) {
-                continue; // Passa al server successivo se questo è lento o bloccato
+                continue; // Passa al server successivo se questo fallisce
             }
         }
 
         if (!audioUrl) {
-            return res.status(502).json({ error: 'Nessuno stream audio compatibile disponibile al momento' });
+            return res.status(502).json({ error: 'Stream audio non disponibile' });
         }
 
         return res.status(200).json({
